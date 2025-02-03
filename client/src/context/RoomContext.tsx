@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Peer from "peerjs";
 import { v4 as uuidV4 } from "uuid";
 import { peersReducer } from "../Reducers/peerReducer";
-import { addPeerNameAction, addPeerStreamAction, removePeerAction } from "../Reducers/peerActions";
+import { addPeerNameAction, addPeerStreamAction, removePeerSrteamAction } from "../Reducers/peerActions";
 import { IMessage } from "../Types/chat";
 import { chatReducer } from "../Reducers/chatReducer";
 import { addHistoryAction, addMessageAction, toggleChatAction } from "../Reducers/chatAction";
@@ -37,7 +37,7 @@ export const RoomProvider: React.FunctionComponent = ({ children }) => {
     };
 
     const removePeer = (peerId: string) => {
-        dispatch(removePeerAction(peerId));
+        dispatch(removePeerSrteamAction(peerId));
     };
 
     const switchStream = (stream: MediaStream) => {
@@ -84,13 +84,13 @@ export const RoomProvider: React.FunctionComponent = ({ children }) => {
     const toggleChat = () => {
         chatDispatch(toggleChatAction(!chat.isChatOpen));
     };
-    useEffect(()=>{
-        localStorage.setItem("userName",userName)
-    },[userName])
+    useEffect(() => {
+        localStorage.setItem("userName", userName)
+    }, [userName])
     useEffect(() => {
         const saveId = localStorage.getItem("userId");
         const meId = saveId || uuidV4();
-        localStorage.setItem("userId",meId);
+        localStorage.setItem("userId", meId);
         // const meId = uuidV4();
         const peer = new Peer(meId, {
             host: "127.0.0.1",
@@ -140,9 +140,10 @@ export const RoomProvider: React.FunctionComponent = ({ children }) => {
         if (!me) return;
         if (!stream) return;
 
-        ws.on("user-joined", ({ peerId, userName :name }) => {
-            dispatch(addPeerNameAction(peerId,name))
-            const call = me.call(peerId, stream,{
+        ws.on("user-joined", ({ peerId, userName: name }) => {
+            console.log(name)
+            dispatch(addPeerNameAction(peerId, name));
+            const call = me.call(peerId, stream, {
                 metadata: {
                     userName,
                 },
@@ -158,19 +159,19 @@ export const RoomProvider: React.FunctionComponent = ({ children }) => {
 
             call.on("close", () => {
                 console.log(`Соединение с ${peerId} закрыто`);
-                dispatch(removePeerAction(peerId));
+                dispatch(removePeerSrteamAction(peerId));
             });
         });
 
         me.on("call", (call) => {
-            const {userName }= call.metadata.userName;
-            dispatch(addPeerNameAction(call.peer,userName));
+            const { userName } = call.metadata.userName;
+            dispatch(addPeerNameAction(call.peer, userName));
             call.answer(stream);
             call.on("stream", (peerStream) => {
                 dispatch(addPeerStreamAction(call.peer, peerStream));
             });
         });
-    }, [me, stream,userName]);
+    }, [me, stream, userName]);
 
     console.log({ peers });
 

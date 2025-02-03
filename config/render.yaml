@@ -1,0 +1,31 @@
+services:
+  - name: client
+    type: web
+    env: node
+    buildCommand: cd client && yarn install && yarn build
+    startCommand: cd client && yarn start
+    envVars:
+      - key: REACT_APP_SERVER_URL
+        value: https://server.onrender.com
+      - key: REACT_APP_PEER_URL
+        value: 127.0.0.1:9001
+
+  - name: server
+    type: web
+    env: node
+    buildCommand: cd server && yarn install && yarn build
+    startCommand: cd server && yarn start
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: PEER_SERVER_URL
+        value: https://server.onrender.com
+
+  - name: peerjs
+    type: web
+    env: node
+    buildCommand: cd peerjs && yarn install && yarn build
+    startCommand: cd peerjs && yarn start
+    envVars:
+      - key: PORT
+        value: 9001
