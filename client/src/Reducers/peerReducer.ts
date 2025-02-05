@@ -1,21 +1,31 @@
-import { act } from "react-dom/test-utils";
-import { ADD_PEER_STREAM, REMOVE_PEER_STREAM as REMOVE_PEER_STREAM ,ADD_PEER_NAME} from "./peerActions";
-import { Stream } from "stream";
+import {
+    ADD_PEER_STREAM,
+    REMOVE_PEER_STREAM,
+    ADD_PEER_NAME,
+    ADD_ALL_PEERS,
+} from "./peerActions";
 
-export type PeerState = Record<string, { stream?: MediaStream, userName?: string }>;
+export type PeerState = Record<
+    string,
+    { stream?: MediaStream; userName?: string }
+>;
 type PeerAction =
     | {
-        type: typeof ADD_PEER_STREAM;
-        payload: { peerId: string; stream: MediaStream };
-    }
+          type: typeof ADD_PEER_STREAM;
+          payload: { peerId: string; stream: MediaStream };
+      }
     | {
-        type: typeof REMOVE_PEER_STREAM;
-        payload: { peerId: string };
-    }
+          type: typeof REMOVE_PEER_STREAM;
+          payload: { peerId: string };
+      }
     | {
-        type: typeof ADD_PEER_NAME;
-        payload: { peerId: string ,userName:string};
-    };
+          type: typeof ADD_PEER_NAME;
+          payload: { peerId: string; userName: string };
+      }
+    | {
+          type: typeof ADD_ALL_PEERS;
+          payload: { peers: Record<string, { userName: string }> };
+      };
 
 export const peersReducer = (state: PeerState, action: PeerAction) => {
     switch (action.type) {
@@ -36,16 +46,16 @@ export const peersReducer = (state: PeerState, action: PeerAction) => {
                 },
             };
         case REMOVE_PEER_STREAM:
-            
-            return{
+            return {
                 ...state,
-                [action.payload.peerId]:{
+                [action.payload.peerId]: {
                     ...state[action.payload.peerId],
                     stream: undefined,
-                }
-            }
-
+                },
+            };
+        case ADD_ALL_PEERS:
+            return { ...state, ...action.payload.peers };
         default:
-            return state;
+            return { ...state };
     }
 };

@@ -5,9 +5,9 @@ import classNames from "classnames";
 
 export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
     const { me, peers } = useContext(RoomContext);
-    const Author = message.author && peers[message.author];
+    const author = message.author && peers[message.author];
     const isSelf = message.author === me?.id;
-    const userNames = Author?.userName || "Anonim";
+    const userNames = author?.userName || "Anonim";
     const time = new Date(message.timestamp).toLocaleTimeString();
     return (
         <div

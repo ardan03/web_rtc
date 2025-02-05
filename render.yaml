@@ -5,7 +5,7 @@ services:
     buildCommand: cd client && yarn install && yarn build
     startCommand: cd client && yarn start
     envVars:
-      - key: REACT_APP_SERVER_URL
+      - key: REACT_APP_SERVER_URL 
         value: https://server.onrender.com
       - key: REACT_APP_PEER_URL
         value: 127.0.0.1:9001
