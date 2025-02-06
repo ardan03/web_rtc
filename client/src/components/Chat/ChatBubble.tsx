@@ -1,13 +1,15 @@
 import { useContext } from "react";
-import { IMessage } from "../../Types/chat";
 import { RoomContext } from "../../context/RoomContext";
+import { IMessage } from "../../Types/chat";
 import classNames from "classnames";
+import { UserContext } from "../../context/UserContext";
 
 export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
-    const { me, peers } = useContext(RoomContext);
+    const { peers } = useContext(RoomContext);
+    const { userId } = useContext(UserContext);
     const author = message.author && peers[message.author];
-    const isSelf = message.author === me?.id;
-    const userNames = author?.userName || "Anonim";
+    const userName = author || "Anonim";
+    const isSelf = message.author === userId;
     const time = new Date(message.timestamp).toLocaleTimeString();
     return (
         <div
@@ -16,7 +18,7 @@ export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
                 "pr-10 justify-start": !isSelf,
             })}
         >
-            <div className="flex flex=col">
+            <div className="flex flex-col">
                 <div
                     className={classNames("inline-block py-2 px-4 rounded", {
                         "bg-red-200": isSelf,
@@ -24,16 +26,23 @@ export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
                     })}
                 >
                     {message.content}
-                    <div className={classNames("text-xs opacity-50", {
+                    <div
+                        className={classNames("text-xs opacity-50", {
+                            "text-right": isSelf,
+                            "text-left": !isSelf,
+                        })}
+                    >
+                        {time}
+                    </div>
+                </div>
+                <div
+                    className={classNames("text-md", {
                         "text-right": isSelf,
                         "text-left": !isSelf,
-                    })}>{time}</div>
+                    })}
+                >
+                    {isSelf ? "You" : userName}
                 </div>
-
-                <div className={classNames("text-md", {
-                    "text-right": isSelf,
-                    "text-left": !isSelf,
-                })}>{isSelf ? "You" : userNames}</div>
             </div>
         </div>
     );
