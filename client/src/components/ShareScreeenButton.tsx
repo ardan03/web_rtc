@@ -4,10 +4,7 @@ export const ShareScreenButton: React.FC<{ onClick: () => void }> = ({
     onClick,
 }) => {
     return (
-        <Button
-            className="p-4 mx-2"
-            onClick={onClick}
-        >
+        <Button className="p-4 mx-2" onClick={onClick}>
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6"

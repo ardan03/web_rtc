@@ -1,4 +1,4 @@
-import { IMessage } from "../Types/chat";
+import { IMessage } from "../types/chat";
 
 export const ADD_MESSAGE = "ADD_MESSAGE" as const;
 export const ADD_HISTORY = "ADD_HISTORY" as const;

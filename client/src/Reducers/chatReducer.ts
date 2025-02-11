@@ -1,5 +1,5 @@
-import { IMessage } from "../Types/chat";
-import { ADD_MESSAGE, ADD_HISTORY, TOGGLE_CHAT } from "./chatAction";
+import { IMessage } from "../types/chat";
+import { ADD_MESSAGE, ADD_HISTORY, TOGGLE_CHAT } from "./chatActions";
 
 export type ChatState = {
     messages: IMessage[];

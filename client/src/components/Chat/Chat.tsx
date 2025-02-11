@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { ChatContext } from "../../context/ChatContext";
-import { IMessage } from "../../Types/chat";
+import { IMessage } from "../../types/chat";
 import { ChatBubble } from "./ChatBubble";
 import { ChatInput } from "./ChatInput";
 

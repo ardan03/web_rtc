@@ -1,14 +1,14 @@
 import { useContext } from "react";
 import { RoomContext } from "../../context/RoomContext";
-import { IMessage } from "../../Types/chat";
+import { IMessage } from "../../types/chat";
 import classNames from "classnames";
 import { UserContext } from "../../context/UserContext";
 
 export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
     const { peers } = useContext(RoomContext);
     const { userId } = useContext(UserContext);
-    const author = message.author && peers[message.author];
-    const userName = author || "Anonim";
+    const author = message.author && peers[message.author].userName;
+    const userName = author || "Anonimus";
     const isSelf = message.author === userId;
     const time = new Date(message.timestamp).toLocaleTimeString();
     return (

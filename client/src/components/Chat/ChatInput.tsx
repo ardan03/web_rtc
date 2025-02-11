@@ -1,9 +1,8 @@
 import { useContext, useState } from "react";
-import { Button } from "../common/Button";
 import { ChatContext } from "../../context/ChatContext";
-import { Room } from "../../pages/Room";
-import { UserContext } from "../../context/UserContext";
 import { RoomContext } from "../../context/RoomContext";
+import { UserContext } from "../../context/UserContext";
+import { Button } from "../common/Button";
 
 export const ChatInput: React.FC = () => {
     const [message, setMessage] = useState("");
@@ -26,8 +25,9 @@ export const ChatInput: React.FC = () => {
                         value={message}
                     />
                     <Button
+                        testId="send-msg-button"
                         type="submit"
-                        className="p-4 mx-2"
+                        className="bg-rose-400 p-4 mx-2 rounded-lg text-xl hover:bg-rose-600 text-white"
                     >
                         <svg
                             style={{ transform: "rotate(90deg)" }}
@@ -49,5 +49,4 @@ export const ChatInput: React.FC = () => {
             </form>
         </div>
     );
-
 };
