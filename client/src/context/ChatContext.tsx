@@ -1,11 +1,11 @@
 import { createContext, useEffect, useReducer } from "react";
-import { IMessage } from "../Types/chat";
-import { chatReducer, ChatState } from "../Reducers/chatReducer";
+import { IMessage } from "../types/chat";
+import { chatReducer, ChatState } from "../reducers/chatReducer";
 import {
     addHistoryAction,
     addMessageAction,
     toggleChatAction,
-} from "../Reducers/chatAction";
+} from "../reducers/chatActions";
 import { ws } from "../ws";
 interface ChatValue {
     chat: ChatState;
@@ -28,6 +28,10 @@ export const ChatProvider: React.FC = ({ children }) => {
     });
 
     const sendMessage = (message: string, roomId: string, author: string) => {
+        if (!message.trim()) {
+            return;
+        }
+        
         const messageData: IMessage = {
             content: message,
             timestamp: new Date().getTime(),

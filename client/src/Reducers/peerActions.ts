@@ -1,4 +1,4 @@
-import { IPeer } from "../Types/Peer";
+import { IPeer } from "../types/peer";
 
 export const ADD_PEER_STREAM = "ADD_PEER_STREAM" as const;
 export const REMOVE_PEER_STREAM = "REMOVE_PEER_STREAM" as const;

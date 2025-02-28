@@ -8,25 +8,31 @@ import {
 import { useNavigate } from "react-router-dom";
 import Peer from "peerjs";
 import { ws } from "../ws";
-import { peersReducer, PeerState } from "../Reducers/peerReducer";
+import { peersReducer, PeerState } from "../reducers/peerReducer";
 import {
     addPeerStreamAction,
     addPeerNameAction,
     removePeerStreamAction,
     addAllPeersAction,
-} from "../Reducers/peerActions";
+} from "../reducers/peerActions";
 
 import { UserContext } from "./UserContext";
-import { IPeer } from "../Types/Peer";
+import { IPeer } from "../types/peer";
 
 interface RoomValue {
     stream?: MediaStream;
+    screenStream?: MediaStream;
     peers: PeerState;
     shareScreen: () => void;
     roomId: string;
     setRoomId: (id: string) => void;
     screenSharingId: string;
+    toggleMicrophone: () => void; 
+    isMicrophoneOn: boolean;
+    toggleCamera: () => void;
+    isCameraOn: boolean;
 }
+
 
 export const RoomContext = createContext<RoomValue>({
     peers: {},
@@ -34,6 +40,10 @@ export const RoomContext = createContext<RoomValue>({
     setRoomId: (id) => {},
     screenSharingId: "",
     roomId: "",
+    toggleMicrophone: () => {},    
+    isMicrophoneOn: true,    
+    toggleCamera: () => {},
+    isCameraOn: true,
 });
 
 export const RoomProvider: React.FunctionComponent = ({ children }) => {
@@ -45,6 +55,8 @@ export const RoomProvider: React.FunctionComponent = ({ children }) => {
     const [peers, dispatch] = useReducer(peersReducer, {});
     const [screenSharingId, setScreenSharingId] = useState<string>("");
     const [roomId, setRoomId] = useState<string>("");
+    const [isMicrophoneOn, setIsMicrophoneOn] = useState<boolean>(true);
+    const [isCameraOn, setIsCameraOn] = useState<boolean>(true);
 
     const enterRoom = ({ roomId }: { roomId: "string" }) => {
         navigate(`/room/${roomId}`);
@@ -62,15 +74,14 @@ export const RoomProvider: React.FunctionComponent = ({ children }) => {
     };
 
     const switchStream = (stream: MediaStream) => {
-        if (!me || !me.connections) return;
-        setStream(stream);
         setScreenSharingId(me?.id || "");
         Object.values(me?.connections).forEach((connection: any) => {
-            const videoTrack = stream
+            const videoTrack: any = stream
                 ?.getTracks()
                 .find((track) => track.kind === "video");
             connection[0].peerConnection
-                .getSenders()[1]
+                .getSenders()
+                .find((sender: any) => sender.track.kind === "video")
                 .replaceTrack(videoTrack)
                 .catch((err: any) => console.error(err));
         });
@@ -82,7 +93,49 @@ export const RoomProvider: React.FunctionComponent = ({ children }) => {
                 .getUserMedia({ video: true, audio: true })
                 .then(switchStream);
         } else {
-            navigator.mediaDevices.getDisplayMedia({}).then(switchStream);
+            navigator.mediaDevices.getDisplayMedia({}).then((stream) => {
+                switchStream(stream);
+                setScreenStream(stream);
+            });
+        }
+    };
+
+    const toggleMicrophone = () => {
+        if (stream) {
+            const audioTrack = stream.getTracks().find(track => track.kind === 'audio');
+            if (audioTrack) {
+                // Проверяем уровень звука с микрофона
+                const audioContext = new AudioContext();
+                const analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                
+                analyser.fftSize = 256;
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(dataArray);  
+                // Проверяем есть ли какой-либо сигнал с микрофона
+                const soundDetected = dataArray.some(value => value > 0);
+                console.log(soundDetected ? "Микрофон ловит звук" : "Микрофон не ловит звук");
+
+                audioTrack.enabled = !audioTrack.enabled;
+                setIsMicrophoneOn(audioTrack.enabled);
+                
+                // Очищаем ресурсы
+                setTimeout(() => {
+                    source.disconnect();
+                    audioContext.close();
+                }, 100);
+            }
+        }
+    };
+
+    const toggleCamera = () => {
+        if (stream) {
+            const videoTrack = stream.getTracks().find(track => track.kind === 'video');
+            if (videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                setIsCameraOn(videoTrack.enabled);
+            }
         }
     };
 
@@ -179,11 +232,16 @@ export const RoomProvider: React.FunctionComponent = ({ children }) => {
         <RoomContext.Provider
             value={{
                 stream,
+                screenStream,
                 peers,
                 shareScreen,
                 roomId,
                 setRoomId,
                 screenSharingId,
+                toggleMicrophone,
+                isMicrophoneOn,
+                toggleCamera,
+                isCameraOn,
             }}
         >
             {children}

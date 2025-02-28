@@ -1,4 +1,4 @@
-import { IPeer } from "../Types/Peer";
+import { IPeer } from "../types/peer";
 import {
     ADD_PEER_STREAM,
     REMOVE_PEER_STREAM,
