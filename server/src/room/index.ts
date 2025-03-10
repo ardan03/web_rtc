@@ -70,17 +70,21 @@ export const roomHandler = (socket: Socket) => {
         socket.to(roomId).emit("add-message", message)
     };
     const changeName = ({ peerId, userName, roomId }: { peerId: string, userName: string, roomId: string }) => {
-        if(rooms[roomId]&&rooms[roomId][peerId]){
+        if (rooms[roomId] && rooms[roomId][peerId]) {
             rooms[roomId][peerId].userName = userName;
             socket.to(roomId).emit("name-changed", { peerId, userName });
         }
     };
+    const tests = ({ usernames, pasw }: { usernames: string, pasw: string }) => {
+        console.log(usernames, pasw);
+    }
     socket.on("create-room", createRoom);
     socket.on("join-room", joinRoom);
     socket.on("start-sharing", startSharing);
     socket.on("stop-sharing", stopSharing);
     socket.on("send-message", addMessage);
     socket.on("change-name", changeName);
+    socket.on("test", tests);
 };
 
 

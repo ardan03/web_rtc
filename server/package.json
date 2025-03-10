@@ -2,7 +2,7 @@
   "name": "webrtc-react",
   "version": "1.0.0",
   "main": "dist/index.js",
-  "author": "Anna",
+  "author": "iKuta",
   "license": "MIT",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
@@ -13,15 +13,22 @@
     "dev": "concurrently --kill-others \"yarn watch\" \"yarn start\""
   },
   "dependencies": {
+    "@prisma/client": "^6.4.1",
     "@types/uuid": "^8.3.4",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.3",
     "socket.io": "^4.4.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^4.17.13",
-    "@types/node": "^17.0.18",
+    "@types/node": "^22.13.10",
+    "prisma": "^6.4.1",
     "tslint": "^6.1.3",
-    "typescript": "^4.5.5"
+    "typescript": "^5.8.2"
   }
 }
