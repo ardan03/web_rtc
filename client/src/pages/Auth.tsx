@@ -20,12 +20,15 @@ export default function LoginPage() {
   const onSubmit = (data: LoginForm) => {
     setLoading(true);
     setError("");
-    ws.emit("login", data, (response: { success: boolean; message?: string }) => {
+    ws.emit("login", data, (response: { success: boolean; message?: string ; userId: string}) => {
       setLoading(false);
-      if (!response.success) {
+      if (!response.success ) {
         setError(response.message || "Ошибка авторизации");
       } else {
-        console.log("Успешный вход");
+        const userId = response.userId;
+        localStorage.setItem("userName", data.username);
+        localStorage.setItem("userId", userId);
+        navigate("/channels/:serverId");
       }
     });
   };

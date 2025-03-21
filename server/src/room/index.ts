@@ -1,8 +1,12 @@
 import { Socket } from "socket.io";
 import { v4 as uuidV4 } from "uuid";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const rooms: Record<string, Record<string, IUser>> = {};
 const chats: Record<string, IMessage[]> = {};
+const prisma = new PrismaClient();
 
 interface IUser {
     peerId: string;
@@ -20,9 +24,14 @@ interface IMessage {
     author?: string;
     timestamp: number;
 }
+interface Iroom{
+    name: string;
+}
 
 export const roomHandler = (socket: Socket) => {
+    console.log("Регистрируем обработчики для сокета:", socket.id);
     const createRoom = () => {
+        console.log("ddd");
         const roomId = uuidV4();
         rooms[roomId] = {};
         socket.emit("room-created", { roomId });
@@ -75,8 +84,26 @@ export const roomHandler = (socket: Socket) => {
             socket.to(roomId).emit("name-changed", { peerId, userName });
         }
     };
-    const tests = ({ usernames, pasw }: { usernames: string, pasw: string }) => {
-        console.log(usernames, pasw);
+    const createServer = async (
+        ServerName: Iroom,
+        callback: (error: Error | null, result:string) => void
+    ) => {
+        console.log(ServerName.name);
+        try {
+            const Room = await prisma.room.create({
+                data: {
+                    name: ServerName.name
+                }
+            });
+            callback(null, "Seccsesful"+Room.name);
+        } catch (error) {
+            callback(error as Error, "null");
+        }
+    };
+    const getServer = async ()=>{
+        const Server = await prisma.room.findMany();
+        socket.emit("server-list", Server);
+
     }
     socket.on("create-room", createRoom);
     socket.on("join-room", joinRoom);
@@ -84,7 +111,53 @@ export const roomHandler = (socket: Socket) => {
     socket.on("stop-sharing", stopSharing);
     socket.on("send-message", addMessage);
     socket.on("change-name", changeName);
-    socket.on("test", tests);
+    socket.on("create-Room", createServer);
+    socket.on("get-servers", getServer);
+    socket.on("register", async (data, callback) => {
+        const { username, password,email } = data;
+
+        const existingUser = await prisma.user.findUnique({ where: { username } });
+        if (existingUser) {
+            return callback({ success: false, message: "Пользователь уже существует" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = await prisma.user.create({
+            data: {
+            username,
+            password: hashedPassword,
+            email
+            },
+        });
+
+        callback({ success: true, message: `Регистрация успешна!`+user.email});
+        });
+        socket.on("login", async (data, callback) => {
+        const { username, password } = data;
+
+        const user = await prisma.user.findUnique({
+            where: { username },
+        });
+
+
+        if (!user) {
+            return callback({ success: false, message: "Пользователь не найден" });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            return callback({ success: false, message: "Неверный пароль" });
+        }
+
+        const token = jwt.sign({ userId: user.id, username: user.username }, process.env.JWT_SECRET!, {
+            expiresIn: "1h",
+        });
+        console.log(user.id);
+        callback({ success: true, token, userId: user.id });
+
+        });
 };
 
 

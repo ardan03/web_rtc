@@ -19,11 +19,12 @@ export const ChatInput: React.FC = () => {
                 }}
             >
                 <div className="flex ">
-                    <textarea
-                        className="border rounded"
-                        onChange={(e) => setMessage(e.target.value)}
-                        value={message}
-                    />
+                <textarea
+                    className="border rounded w-full p-2 text-black bg-white"
+                    onChange={(e) => setMessage(e.target.value)}
+                    value={message}
+                    placeholder="Введите сообщение"
+                />
                     <Button
                         testId="send-msg-button"
                         type="submit"

@@ -31,14 +31,12 @@ export const ChatProvider: React.FC = ({ children }) => {
         if (!message.trim()) {
             return;
         }
-        
         const messageData: IMessage = {
             content: message,
             timestamp: new Date().getTime(),
             author,
         };
         chatDispatch(addMessageAction(messageData));
-
         ws.emit("send-message", roomId, messageData);
     };
 

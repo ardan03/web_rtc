@@ -4,6 +4,7 @@ import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/common/Card";
 import { ws } from "../ws";
+import { useNavigate } from "react-router-dom";
 
 interface RegisterForm {
     email: string;
@@ -15,6 +16,7 @@ export default function RegisterPage() {
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const navigate = useNavigate();
 
     const onSubmit = (data: RegisterForm) => {
     setLoading(true);
@@ -25,6 +27,7 @@ export default function RegisterPage() {
             setError(response.message || "Ошибка регистрации");
         } else {
             console.log("Регистрация успешна");
+            navigate("/")
         }
     });
     };
