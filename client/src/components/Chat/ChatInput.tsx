@@ -14,6 +14,7 @@ export const ChatInput: React.FC = () => {
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
+                    console.log(roomId,userId,message)
                     sendMessage(message, roomId, userId);
                     setMessage("");
                 }}

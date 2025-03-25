@@ -7,10 +7,18 @@ import { UserContext } from "../../context/UserContext";
 export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
     const { peers } = useContext(RoomContext);
     const { userId } = useContext(UserContext);
-    const author = message.author && peers[message.author].userName;
+
+    // Отладка
+    console.log("Message:", message);
+    console.log("Peers:", peers);
+
+    const author = message.author && peers[message.author]?.userName;
     const userName = author || "Anonimus";
     const isSelf = message.author === userId;
-    const time = new Date(message.timestamp).toLocaleTimeString();
+    const time = message.timestamp
+        ? new Date(message.timestamp).toLocaleTimeString()
+        : "Время неизвестно";
+
     return (
         <div
             className={classNames("m-2 flex", {
@@ -25,7 +33,7 @@ export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
                         "bg-red-300": !isSelf,
                     })}
                 >
-                    {message.content}
+                    {message.content || "Сообщение отсутствует"}
                     <div
                         className={classNames("text-xs opacity-50", {
                             "text-right": isSelf,

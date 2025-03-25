@@ -15,7 +15,7 @@ interface ChatValue {
 export const ChatContext = createContext<ChatValue>({
     chat: {
         messages: [],
-        isChatOpen: false,
+        isChatOpen: true,
     },
     sendMessage: (message: string, roomId: string, author: string) => {},
     toggleChat: () => {},
@@ -24,13 +24,15 @@ export const ChatContext = createContext<ChatValue>({
 export const ChatProvider: React.FC = ({ children }) => {
     const [chat, chatDispatch] = useReducer(chatReducer, {
         messages: [],
-        isChatOpen: false,
+        isChatOpen: true,
     });
 
     const sendMessage = (message: string, roomId: string, author: string) => {
         if (!message.trim()) {
+            console.log("no");
             return;
         }
+        console.log("yes");
         const messageData: IMessage = {
             content: message,
             timestamp: new Date().getTime(),

@@ -7,9 +7,9 @@ export type ChatState = {
 };
 type ChatAction =
     | {
-          type: typeof ADD_MESSAGE;
-          payload: { message: IMessage };
-      }
+        type: typeof ADD_MESSAGE;
+        payload: { message: IMessage };
+    }
     | {
           type: typeof ADD_HISTORY;
           payload: { history: IMessage[] };

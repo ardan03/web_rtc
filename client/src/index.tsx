@@ -1,4 +1,3 @@
-// index.tsx
 import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -13,7 +12,7 @@ import LoginPage from "./pages/Auth";
 import RegisterPage from "./pages/Register";
 import ChatContent from "./components/Channel/ChatContent"; 
 import Channel from "./pages/Channel";
-import CreateServer from "./pages/CreateServer"
+import CreateServer from "./pages/CreateServer";
 
 ReactDOM.render(
     <React.StrictMode>
@@ -21,7 +20,7 @@ ReactDOM.render(
             <UserProvider>
                 <RoomProvider>
                     <Routes>
-                    <Route path="/home" element={<Home />} />
+                        <Route path="/home" element={<Home />} />
                         <Route
                             path="/room/:id"
                             element={
@@ -31,12 +30,18 @@ ReactDOM.render(
                             }
                         />
                         <Route path="/channels" element={<Channel />}>
-                            <Route path="create" element={<CreateServer />} /> {/* Страница создания */}
-                            <Route path=":serverId" element={<ChatContent />} />
+                            <Route path="create" element={<CreateServer />} />
+                            <Route
+                                path=":serverId"
+                                element={
+                                    <ChatProvider>
+                                        <ChatContent />
+                                    </ChatProvider>
+                                }
+                            />
                         </Route>
                         <Route path="/" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
-                        
                     </Routes>
                 </RoomProvider>
             </UserProvider>

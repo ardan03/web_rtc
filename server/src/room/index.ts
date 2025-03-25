@@ -76,6 +76,7 @@ export const roomHandler = (socket: Socket) => {
         } else {
             chats[roomId] = [message];
         }
+        console.log(roomId);
         socket.to(roomId).emit("add-message", message)
     };
     const changeName = ({ peerId, userName, roomId }: { peerId: string, userName: string, roomId: string }) => {
