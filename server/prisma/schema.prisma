@@ -7,29 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Message {
-  id        String   @id
-  content   String
-  createdAt DateTime @default(now())
-  userId    String
-  roomId    String
-  Room      Room     @relation(fields: [roomId], references: [id])
-  User      User     @relation(fields: [userId], references: [id])
-}
-
-model Room {
-  id        String    @id @default(uuid())
-  name      String
-  createdAt DateTime  @default(now())
-  Message   Message[]
-  User      User[]    @relation("RoomMembers")
-}
-
 model User {
   id       String    @id @default(uuid())
   username String    @unique
   email    String    @unique
   password String
-  Message  Message[]
-  Room     Room[]    @relation("RoomMembers")
+  servers  Server[]  @relation("ServerMembers") // Убрано references
+  messages Message[]
+}
+
+model Server {
+  id        String    @id @default(uuid())
+  name      String
+  ownerId   String
+  createdAt DateTime  @default(now())
+  rooms     Room[]
+  members   User[]    @relation("ServerMembers") // Убрано references
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  name      String
+  type      RoomType
+  serverId  String
+  createdAt DateTime @default(now())
+  messages  Message[]
+  server    Server   @relation(fields: [serverId], references: [id])
+}
+
+enum RoomType {
+  TEXT
+  VOICE
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  userId    String
+  roomId    String
+  user      User     @relation(fields: [userId], references: [id])
+  room      Room     @relation(fields: [roomId], references: [id])
 }

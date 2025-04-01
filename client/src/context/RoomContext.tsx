@@ -116,7 +116,7 @@ export const RoomProvider: React.FunctionComponent = ({ children }) => {
                 // Проверяем есть ли какой-либо сигнал с микрофона
                 const soundDetected = dataArray.some(value => value > 0);
                 console.log(soundDetected ? "Микрофон ловит звук" : "Микрофон не ловит звук");
-
+                console.log(roomId);
                 audioTrack.enabled = !audioTrack.enabled;
                 setIsMicrophoneOn(audioTrack.enabled);
                 

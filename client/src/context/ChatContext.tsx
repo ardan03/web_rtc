@@ -10,6 +10,7 @@ import { ws } from "../ws";
 interface ChatValue {
     chat: ChatState;
     sendMessage: (message: string, roomId: string, author: string) => void;
+    sendFile: (file: File, roomId: string, author: string) => void;
     toggleChat: () => void;
 }
 export const ChatContext = createContext<ChatValue>({
@@ -18,6 +19,7 @@ export const ChatContext = createContext<ChatValue>({
         isChatOpen: true,
     },
     sendMessage: (message: string, roomId: string, author: string) => {},
+    sendFile: () => {},
     toggleChat: () => {},
 });
 
@@ -40,6 +42,27 @@ export const ChatProvider: React.FC = ({ children }) => {
         };
         chatDispatch(addMessageAction(messageData));
         ws.emit("send-message", roomId, messageData);
+    };
+    const sendFile = (file: File, roomId: string, author: string) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const fileData = {
+                fileName: file.name,
+                fileType: file.type,  // Включен тип файла, если он нужен на сервере
+                fileBuffer: reader.result,  // `ArrayBuffer`
+                author,
+            };
+            
+            // Отправляем данные о файле через WebSocket
+            ws.emit("send-file", roomId, fileData);
+        };
+    
+        reader.onerror = (error) => {
+            console.error("Ошибка при чтении файла:", error);
+        };
+    
+        // Чтение файла как ArrayBuffer
+        reader.readAsArrayBuffer(file);
     };
 
     const addMessage = (message: IMessage) => {
@@ -66,6 +89,7 @@ export const ChatProvider: React.FC = ({ children }) => {
             value={{
                 chat,
                 sendMessage,
+                sendFile,
                 toggleChat,
             }}
         >

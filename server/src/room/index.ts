@@ -3,6 +3,8 @@ import { v4 as uuidV4 } from "uuid";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import fs from "fs";
+import path from "path";
 
 const rooms: Record<string, Record<string, IUser>> = {};
 const chats: Record<string, IMessage[]> = {};
@@ -23,12 +25,23 @@ interface IMessage {
     content: string;
     author?: string;
     timestamp: number;
+    fileUrl?: string | null;
 }
-interface Iroom{
+interface Iserver{
     name: string;
+    ownerId: string;
+}
+interface IFileData {
+    fileName: string;
+    fileType: string;
+    fileBuffer: ArrayBuffer;
+    author: string;
+
 }
 
-export const roomHandler = (socket: Socket) => {
+
+
+export const roomHandler = (socket: Socket, uploadDir: string) => {
     console.log("Регистрируем обработчики для сокета:", socket.id);
     const createRoom = () => {
         console.log("ddd");
@@ -86,23 +99,36 @@ export const roomHandler = (socket: Socket) => {
         }
     };
     const createServer = async (
-        ServerName: Iroom,
-        callback: (error: Error | null, result:string) => void
+        ServerInfo: Iserver,
+        callback: (error: Error | null, result: string) => void
     ) => {
-        console.log(ServerName.name);
+        console.log(ServerInfo.name);
+        console.log(ServerInfo.ownerId);
         try {
-            const Room = await prisma.room.create({
+            const server = await prisma.server.create({
                 data: {
-                    name: ServerName.name
+                    name: ServerInfo.name,
+                    ownerId: ServerInfo.ownerId,
+                    rooms: {
+                        create: [
+                            { name: "Общий чат", type: "TEXT" },
+                            { name: "Голосовая комната", type: "VOICE" }
+                        ]
+                    }
+                },
+                include: {
+                    rooms: true // Чтобы вернуть созданные комнаты
                 }
             });
-            callback(null, "Seccsesful"+Room.name);
+
+            callback(null, `Сервер "${server.name}" создан с 2 комнатами`);
         } catch (error) {
             callback(error as Error, "null");
         }
     };
+
     const getServer = async ()=>{
-        const Server = await prisma.room.findMany();
+        const Server = await prisma.server.findMany();
         socket.emit("server-list", Server);
 
     }
@@ -112,7 +138,7 @@ export const roomHandler = (socket: Socket) => {
     socket.on("stop-sharing", stopSharing);
     socket.on("send-message", addMessage);
     socket.on("change-name", changeName);
-    socket.on("create-Room", createServer);
+    socket.on("create-Server", createServer);
     socket.on("get-servers", getServer);
     socket.on("register", async (data, callback) => {
         const { username, password,email } = data;
@@ -158,6 +184,27 @@ export const roomHandler = (socket: Socket) => {
         console.log(user.id);
         callback({ success: true, token, userId: user.id });
 
+        });
+        socket.on("send-file", (roomId: string, fileData: IFileData) => {
+            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+            const filePath = path.join(uploadDir, `${uuidV4()}${path.extname(fileData.fileName)}`);
+            fs.writeFileSync(filePath, Buffer.from(fileData.fileBuffer));
+            console.log("File saved at:", filePath);
+
+            const fileUrl = `http://localhost:8080/uploads/${path.basename(filePath)}`; // Абсолютный URL
+            const message: IMessage = {
+                content: `📁 Файл: ${fileData.fileName}`,
+                author: fileData.author,
+                timestamp: Date.now(),
+                fileUrl,
+            };
+
+            if (!chats[roomId]) chats[roomId] = [];
+            chats[roomId].push(message);
+
+            socket.to(roomId).emit("add-message", message);
+            socket.emit("add-message", message);
         });
 };
 

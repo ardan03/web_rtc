@@ -34,6 +34,21 @@ export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
                     })}
                 >
                     {message.content || "Сообщение отсутствует"}
+                    {message.fileUrl && (
+                        <div className="mt-2">
+                            <a
+                                href={message.fileUrl}
+                                download={
+                                    message.content.startsWith("📁 Файл: ")
+                                        ? message.content.split("📁 Файл: ")[1]
+                                        : "file"
+                                }
+                                className="text-blue-500 underline hover:text-blue-700"
+                            >
+                                Скачать файл
+                            </a>
+                        </div>
+                    )}
                     <div
                         className={classNames("text-xs opacity-50", {
                             "text-right": isSelf,
