@@ -11,13 +11,12 @@ export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
     // Отладка
     console.log("Message:", message);
     console.log("Peers:", peers);
-
-    const author = message.author && peers[message.author]?.userName;
-    const userName = author || "Anonimus";
-    const isSelf = message.author === userId;
+    const userName = message.userName;
+    const userID = localStorage.getItem("userId");
+    const isSelf = message.author === userID;
     const time = message.timestamp
-        ? new Date(message.timestamp).toLocaleTimeString()
-        : "Время неизвестно";
+    ? new Date(Number(message.timestamp)).toLocaleTimeString() // Преобразуем в число перед `Date`
+    : "Время неизвестно";
 
     return (
         <div
