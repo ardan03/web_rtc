@@ -6,7 +6,6 @@ import { UserContext } from "../../context/UserContext";
 
 export const ChatBubble: React.FC<{ message: IMessage }> = ({ message }) => {
     const { peers } = useContext(RoomContext);
-    const { userId } = useContext(UserContext);
 
     // Отладка
     console.log("Message:", message);

@@ -19,12 +19,12 @@ export const ChatInput: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+        console.log("не сломалось 1")
         if (message.trim()) {
             sendMessage(message, roomId, userId);
             setMessage("");
         }
-
+        console.log("yt ckjvfkjcm 2")
         if (selectedFile) {
             sendFile(selectedFile, roomId, userId);
             setSelectedFile(null);

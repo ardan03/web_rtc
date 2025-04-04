@@ -66,11 +66,15 @@ export const ChatProvider: React.FC = ({ children }) => {
     };
 
     const addMessage = (message: IMessage) => {
+        console.log("yt ckjvfkjcm 1")
         chatDispatch(addMessageAction(message));
+        console.log("выполнилось")
     };
 
     const addHistory = (messages: IMessage[]) => {
+        console.log("yt ckjvfkjcm 3")
         chatDispatch(addHistoryAction(messages));
+        console.log("yt ckjvfkjcm 4")
     };
 
     const toggleChat = () => {

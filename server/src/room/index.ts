@@ -110,30 +110,28 @@ export const roomHandler = (socket: Socket, uploadDir: string) => {
     const newMessage = await prisma.message.create({
       data: {
         content: message.content,
-        userId: message.author ?? "default-user-id", // Гарантируем, что это строка
+        userId: message.author ?? "default-user-id",
         roomId,
-        createdAt: new Date(message.timestamp), // Преобразуем timestamp в Date
+        createdAt: new Date(message.timestamp),
       },
     });
-    const username = await prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         id: message.author ?? "-1",
       },
       select: {
         username: true,
       },
-    }
-    );
-    console.log("12345678" + username);
+    });
+    console.log("12345678", user); // Изменено для ясности
     const formattedMessage = {
       content: newMessage.content,
-      timestamp: newMessage.createdAt.getTime(), // Преобразуем в миллисекунды
-      author: newMessage.userId, // Используем userId вместо вложенного объекта user
-      userName: username
+      timestamp: newMessage.createdAt.getTime(),
+      author: newMessage.userId,
+      userName: user?.username ?? "Аноним", // Извлекаем строку username
     };
-
     console.log(roomId);
-    socket.to(roomId).emit("add-message", formattedMessage)
+    socket.to(roomId).emit("add-message", formattedMessage) // Если вы отправляете это через WebSocket
   };
   const changeName = ({ peerId, userName, roomId }: { peerId: string, userName: string, roomId: string }) => {
     if (rooms[roomId] && rooms[roomId][peerId]) {

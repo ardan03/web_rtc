@@ -49,6 +49,7 @@ const ChatContent = () => {
   const handleRoomSelect = (roomId: string) => {
     setSelectedRoomId(roomId);
     setRoomId(roomId);
+    
     ws.emit("join-room", { roomId, peerId: "some-peer-id", userName: "some-user" });
     ws.emit("get-messages", { roomId }, (messages: IMessage[]) => {
       chatDispatch(addHistoryAction(messages));
