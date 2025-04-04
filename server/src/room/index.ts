@@ -75,15 +75,15 @@ export const roomHandler = (socket: Socket, uploadDir: string) => {
     socket.join(roomId);
     socket.to(roomId).emit("user-joined", { peerId, userName });
     socket.emit("get-users", {
-        roomId,
-        participants: rooms[roomId],
+      roomId,
+      participants: rooms[roomId],
     });
 
     socket.on("disconnect", () => {
-        console.log("user left the room", peerId);
-        leaveRoom({ roomId, peerId });
+      console.log("user left the room", peerId);
+      leaveRoom({ roomId, peerId });
     });
-};
+  };
 
 
 
@@ -116,15 +116,15 @@ export const roomHandler = (socket: Socket, uploadDir: string) => {
       },
     });
     const username = await prisma.user.findFirst({
-      where:{
+      where: {
         id: message.author ?? "-1",
       },
-      select:{
+      select: {
         username: true,
       },
     }
     );
-    console.log("12345678"+ username);
+    console.log("12345678" + username);
     const formattedMessage = {
       content: newMessage.content,
       timestamp: newMessage.createdAt.getTime(), // Преобразуем в миллисекунды
@@ -157,10 +157,14 @@ export const roomHandler = (socket: Socket, uploadDir: string) => {
               { name: "Общий чат", type: "TEXT" },
               { name: "Голосовая комната", type: "VOICE" }
             ]
+          },
+          members: {
+            connect: { id: ServerInfo.ownerId } // Присоединяем владельца к серверу
           }
         },
         include: {
-          rooms: true // Чтобы вернуть созданные комнаты
+          rooms: true,   // Чтобы вернуть созданные комнаты
+          members: true  // Чтобы вернуть список участников (включая владельца)
         }
       });
 
@@ -170,11 +174,22 @@ export const roomHandler = (socket: Socket, uploadDir: string) => {
     }
   };
 
-  const getServer = async () => {
-    const Server = await prisma.server.findMany();
-    socket.emit("server-list", Server);
+  const getServer = async (userId: string) => {
+    console.log(userId + "         12345");
+    const userServers = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        servers: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
+    socket.emit("server-list", userServers?.servers);
 
-  }
+  };
   const getRooms = async (
     serverId: string,
     callback: (response: { rooms: { id: string; name: string; type: "TEXT" | "VOICE" }[] }) => void
@@ -206,7 +221,7 @@ export const roomHandler = (socket: Socket, uploadDir: string) => {
   socket.on("send-message", addMessage);
   socket.on("change-name", changeName);
   socket.on("create-Server", createServer);
-  socket.on("get-servers", getServer);
+  socket.on("get-servers", (userId) => getServer(userId));
   socket.on("get-rooms", getRooms);
   socket.on("register", async (data, callback) => {
     const { username, password, email } = data;
@@ -231,10 +246,7 @@ export const roomHandler = (socket: Socket, uploadDir: string) => {
   socket.on("login", async (data, callback) => {
     const { username, password } = data;
 
-    const user = await prisma.user.findUnique({
-      where: { username },
-    });
-
+    const user = await prisma.user.findUnique({ where: { username } });
 
     if (!user) {
       return callback({ success: false, message: "Пользователь не найден" });
@@ -246,12 +258,14 @@ export const roomHandler = (socket: Socket, uploadDir: string) => {
       return callback({ success: false, message: "Неверный пароль" });
     }
 
-    const token = jwt.sign({ userId: user.id, username: user.username }, process.env.JWT_SECRET!, {
-      expiresIn: "1h",
-    });
-    console.log(user.id);
-    callback({ success: true, token, userId: user.id });
+    // Генерируем токен
+    const token = jwt.sign(
+      { userId: user.id, username: user.username },
+      process.env.JWT_SECRET!,
+      { expiresIn: "1h" }
+    );
 
+    callback({ success: true, token, userId: user.id });
   });
   socket.on("send-file", (roomId: string, fileData: IFileData) => {
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
@@ -274,6 +288,7 @@ export const roomHandler = (socket: Socket, uploadDir: string) => {
     socket.to(roomId).emit("add-message", message);
     socket.emit("add-message", message);
   });
+
 };
 
 

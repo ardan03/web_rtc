@@ -16,12 +16,11 @@ export const Sidebar = () => {
   const { userName, userId } = useContext(UserContext); // Получаем setRoomId из контекста
 
   const GetServers = () => {
-    ws.emit("get-servers");
-
+    const userId = localStorage.getItem("userId");
+    ws.emit("get-servers", userId);
     ws.on("server-list", (serverList: Server[]) => {
       setServers(serverList);
     });
-
     return () => {
       ws.off("server-list");
     };
@@ -57,9 +56,29 @@ export const Sidebar = () => {
       </div>
 
       {/* Кнопка создания сервера */}
-      <button className="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center hover:bg-green-500">
-        <Link to={"/channels/create"}>+</Link>
-      </button>
+      <div className="relative group">
+        <button className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/30 active:scale-95">
+          <Link to={"/channels/create"}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-8 h-8"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          </Link>
+        </button>
+        <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+          Создать сервер
+        </span>
+      </div>
     </div>
   );
 };

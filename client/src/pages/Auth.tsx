@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
@@ -17,25 +17,52 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Проверяем токен при открытии страницы
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      ws.auth = { token };
+      ws.connect();
+
+      ws.on("connect", () => {
+        console.log("Авто-вход выполнен");
+        navigate("/channels/"); // Перенаправляем в систему
+      });
+
+      ws.on("connect_error", (err) => {
+        console.error("Ошибка авторизации:", err.message);
+        localStorage.removeItem("authToken"); // Если токен невалиден, удаляем его
+      });
+    }
+  }, [navigate]);
+
   const onSubmit = (data: LoginForm) => {
     setLoading(true);
     setError("");
-    ws.emit("login", data, (response: { success: boolean; message?: string ; userId: string}) => {
+    
+    ws.emit("login", data, (response: { success: boolean; message?: string; userId: string; token?: string }) => {
       setLoading(false);
-      if (!response.success ) {
+      if (!response.success) {
         setError(response.message || "Ошибка авторизации");
       } else {
-        const userId = response.userId;
         localStorage.setItem("userName", data.username);
-        localStorage.setItem("userId", userId);
-        navigate("/channels/:serverId");
+        localStorage.setItem("userId", response.userId);
+        
+        if (response.token) {
+          localStorage.setItem("authToken", response.token);
+          ws.auth = { token: response.token }; // Добавляем токен в WebSocket
+          ws.connect();
+        }
+
+        navigate("/channels/");
       }
     });
   };
-  const handleRegisterClick = () => {
 
-   navigate("/register"); // Навигация на страницу регистрации
+  const handleRegisterClick = () => {
+    navigate("/register");
   };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <Card className="w-96 shadow-lg">
